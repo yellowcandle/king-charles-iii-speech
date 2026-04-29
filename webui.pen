@@ -1,0 +1,429 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "z0jXwy",
+      "x": 0,
+      "y": 0,
+      "name": "Desktop / Bilingual Reader",
+      "width": 1200,
+      "fill": "#faf6ee",
+      "stroke": {
+        "align": "inside",
+        "thickness": 1,
+        "fill": "#d9d1bd"
+      },
+      "layout": "vertical",
+      "gap": 40,
+      "padding": [
+        64,
+        88
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "oSHrv",
+          "name": "header",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "type": "text",
+              "id": "b7fyHd",
+              "name": "eyebrow",
+              "fill": "#8b1a1a",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "ADDRESS TO THE 119TH CONGRESS  ·  APRIL 2026",
+              "fontFamily": "EB Garamond",
+              "fontSize": 13,
+              "fontWeight": "500",
+              "letterSpacing": 2.6
+            },
+            {
+              "type": "text",
+              "id": "BH2lV",
+              "name": "title",
+              "fill": "#1f1a14",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "King Charles III at the Joint Session of Congress",
+              "lineHeight": 1.15,
+              "fontFamily": "EB Garamond",
+              "fontSize": 48,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "h8paxg",
+              "name": "subtitle",
+              "fill": "#4a4036",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Original English  ·  文言詔體 — A Bilingual Reader",
+              "fontFamily": "EB Garamond",
+              "fontSize": 20,
+              "fontWeight": "normal",
+              "fontStyle": "italic"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mD5qc",
+          "name": "toolbar",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "gap": 16,
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "NM7ps",
+              "name": "segmented",
+              "fill": "#fbf8f1",
+              "cornerRadius": 8,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#d9d1bd"
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "YNvD1",
+                  "name": "seg1",
+                  "fill": "#1f1a14",
+                  "cornerRadius": [
+                    8,
+                    0,
+                    0,
+                    8
+                  ],
+                  "padding": [
+                    8,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h6tVzJ",
+                      "name": "seg1Text",
+                      "fill": "#faf6ee",
+                      "content": "English",
+                      "fontFamily": "EB Garamond",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BF6GW",
+                  "name": "seg2",
+                  "fill": "#00000000",
+                  "padding": [
+                    8,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JEVrj",
+                      "name": "seg2Text",
+                      "fill": "#1f1a14",
+                      "content": "Both",
+                      "fontFamily": "EB Garamond",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SnZK2",
+                  "name": "seg3",
+                  "fill": "#00000000",
+                  "cornerRadius": [
+                    0,
+                    8,
+                    8,
+                    0
+                  ],
+                  "padding": [
+                    8,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bBTsg",
+                      "name": "seg3Text",
+                      "fill": "#1f1a14",
+                      "content": "文言",
+                      "fontFamily": "Noto Serif TC",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IU6oa",
+              "name": "themeToggle",
+              "fill": "#fbf8f1",
+              "cornerRadius": 8,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#d9d1bd"
+              },
+              "gap": 8,
+              "padding": [
+                8,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "qNvlk",
+                  "name": "themeIcon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "moon",
+                  "iconFontFamily": "lucide",
+                  "fill": "#1f1a14"
+                },
+                {
+                  "type": "text",
+                  "id": "Z81TH",
+                  "name": "themeText",
+                  "fill": "#1f1a14",
+                  "content": "Dark mode",
+                  "fontFamily": "EB Garamond",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "H53W1p",
+          "name": "ruleBlock",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "layout": "vertical",
+          "gap": 3,
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "Y7Jmrg",
+              "name": "rule1",
+              "fill": "#8b1a1a",
+              "width": "fill_container",
+              "height": 2
+            },
+            {
+              "type": "rectangle",
+              "id": "uqh52",
+              "name": "rule2",
+              "fill": "#8b1a1a",
+              "width": "fill_container",
+              "height": 1
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "lyIpy",
+          "name": "pair1",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "gap": 56,
+          "children": [
+            {
+              "type": "frame",
+              "id": "cKh8r",
+              "name": "pair1En",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "w0nir7",
+                  "name": "pair1EnLabel",
+                  "fill": "#a0907a",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "§ XVI  ·  ENGLISH",
+                  "fontFamily": "EB Garamond",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 2.2
+                },
+                {
+                  "type": "text",
+                  "id": "ytV1i",
+                  "name": "pair1EnText",
+                  "fill": "#1f1a14",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "lineHeight": 1.55,
+                  "fontFamily": "EB Garamond",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "y6y4Dy",
+              "name": "pair1Zh",
+              "width": "fill_container",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "h1jMf2",
+                  "name": "pair1ZhLabel",
+                  "fill": "#a0907a",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "第十六節  ·  文言",
+                  "fontFamily": "Noto Serif TC",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 2.2
+                },
+                {
+                  "type": "text",
+                  "id": "dchZz",
+                  "name": "pair1ZhText",
+                  "fill": "#1f1a14",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "lineHeight": 1.7,
+                  "fontFamily": "Noto Serif TC",
+                  "fontSize": 19,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Yu7J8",
+          "name": "ruleBlock2",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "layout": "vertical",
+          "gap": 3,
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "gkQbO",
+              "name": "rule2a",
+              "fill": "#8b1a1a",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "rectangle",
+              "id": "uM3xq",
+              "name": "rule2b",
+              "fill": "#8b1a1a",
+              "width": "fill_container",
+              "height": 2
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "BiwNM",
+          "name": "footer",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "gap": 24,
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "QB5Ut",
+              "name": "footerLeft",
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xmNZR",
+                  "name": "footerSource",
+                  "fill": "#4a4036",
+                  "content": "Source · CharlesIII-speech.txt",
+                  "fontFamily": "EB Garamond",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "CrpsG",
+                  "name": "footerAttr",
+                  "fill": "#7a6f5e",
+                  "content": "文言詔體 translation drafted with ChatGPT, reviewed by author.",
+                  "fontFamily": "EB Garamond",
+                  "fontSize": 13,
+                  "fontWeight": "normal",
+                  "fontStyle": "italic"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "OjmHQ",
+              "name": "footerRight",
+              "fill": "#00000000",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "QQSfW",
+                  "name": "footerSeal",
+                  "width": 14,
+                  "height": 14,
+                  "iconFontName": "crown",
+                  "iconFontFamily": "lucide",
+                  "fill": "#8b1a1a"
+                },
+                {
+                  "type": "text",
+                  "id": "k9EAn",
+                  "name": "footerSig",
+                  "fill": "#4a4036",
+                  "content": "yellowcandle · 2026",
+                  "fontFamily": "EB Garamond",
+                  "fontSize": 13,
+                  "fontWeight": "normal",
+                  "letterSpacing": 1.4
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/swong/dev/king-charles-iii-speech config user.name \"yellowcandle\")",
+      "Bash(git -C /Users/swong/dev/king-charles-iii-speech config user.email \"yellowcandle@gmail.com\")",
+      "Bash(git -C /Users/swong/dev/king-charles-iii-speech config user.name)",
+      "Bash(git -C /Users/swong/dev/king-charles-iii-speech config user.email)",
+      "Bash(git -C /Users/swong/dev/king-charles-iii-speech config user.email \"4060163+yellowcandle@users.noreply.github.com\")"
+    ]
+  }
+}
