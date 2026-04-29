@@ -79,6 +79,11 @@
     "extract": "English law is the common law legal system of England and Wales, comprising mainly criminal law and civil law, each branch having its own courts and procedures. The judiciary is independent, and legal principles like fairness, equality before the law, and the right to a fair trial are foundational to the system.",
     "title": "English law"
   },
+  "en.wikipedia.org/Fascism": {
+    "description": "Far-right authoritarian political ideology",
+    "extract": "Fascism is a far-right, authoritarian, and ultranationalist political ideology and movement that rose to prominence in early-20th-century Europe. Fascism is characterized by support for a dictatorial leader, centralized autocracy, militarism, forcible suppression of opposition, belief in a natural social hierarchy, subordination of individual interests for the perceived interest of the nation or race, and strong regimentation of society and the economy. Opposed to communism, democracy, liberalism, pluralism, and socialism, fascism is at the far-right of the traditional left–right spectrum. What constitutes a precise definition of fascism has been a longrunning and complex debate among scholars.",
+    "title": "Fascism"
+  },
   "en.wikipedia.org/George_III": {
     "description": "King of Great Britain and Ireland from 1760 to 1820",
     "extract": "George III was King of Great Britain and Ireland from 25 October 1760 until his death in 1820. The Acts of Union 1800 unified Great Britain and Ireland into the United Kingdom of Great Britain and Ireland, with George as its king. He was concurrently duke and prince-elector of Hanover in the Holy Roman Empire before becoming King of Hanover on 12 October 1814. He was the first monarch of the House of Hanover who was born in Great Britain, spoke English as his first language, and never visited Hanover.",
@@ -214,6 +219,16 @@
     "extract": "The September 11 attacks, colloquially known as 9/11, were a coordinated series of suicide attacks perpetrated by the Islamist terrorist organization al-Qaeda against the United States in 2001. Nineteen terrorists hijacked four airliners, then flew one into each of the Twin Towers at the World Trade Center in New York City. The third plane crashed into the Pentagon, the headquarters of the United States Department of Defense, in Arlington County, Virginia. The fourth plane crashed in a rural Pennsylvania field during a passenger revolt. In response to the attacks, the United States launched the global war on terror, seeking to eliminate hostile groups deemed terrorist organizations, and the governments purported to support them. This foreign policy agenda was conducted over the next two decades.",
     "title": "September 11 attacks"
   },
+  "en.wikipedia.org/Statue_of_Freedom": {
+    "description": "Sculpture by Thomas Crawford on top of the US Capitol",
+    "extract": "The Statue of Freedom, also known as Armed Freedom or simply Freedom, is a bronze statue designed by Thomas Crawford that, since 1863, has crowned the United States Capitol dome. Originally named Freedom Triumphant in War and Peace, a U.S. government publication now states that the statue \"is officially known as the Statue of Freedom.\" The statue depicts a female figure bearing a military helmet and holding a sheathed sword in her right hand and a laurel wreath and shield in her left.",
+    "title": "Statue of Freedom"
+  },
+  "en.wikipedia.org/Statue_of_Liberty": {
+    "description": "Colossal sculpture in New York Harbor",
+    "extract": "The Statue of Liberty is a colossal neoclassical sculpture of a robed and crowned woman on Liberty Island in New York Harbor, within New York City. The copper-clad statue, a gift to the United States from the people of France, was designed by French sculptor Frédéric Auguste Bartholdi, and its metal framework built by Gustave Eiffel. The statue was dedicated on October 28, 1886.",
+    "title": "Statue of Liberty"
+  },
   "en.wikipedia.org/Supreme_Court_Historical_Society": {
     "description": "Non-profit close to the US Supreme Court",
     "extract": "The Supreme Court Historical Society (SCHS) describes itself as \"a Washington, D.C.–based private, nonpartisan, not for profit 501(c)(3) membership organization dedicated to preserving and communicating the history of the U.S. Supreme Court, increasing public awareness of the Court’s contribution to our nation’s rich constitutional heritage, and acquiring knowledge covering the history of the entire Judicial Branch.\"",
@@ -324,6 +339,11 @@
     "extract": "北大西洋公約組織 是一个由2個北美國家及30个歐洲国家组成的國際军事联盟。其成立于二戰后1949年签署的《北大西洋公约》。该组织负责集体安全，其独立成员国同意相互防御，以应对外部威胁。条约第5条明确规定，对一个成员国的武装攻击应被视为对所有成员国的攻击。",
     "title": "北大西洋公约组织"
   },
+  "zh.wikipedia.org/北极": {
+    "description": "地球上最北的點",
+    "extract": "北极点，用於稱呼地球上的地理北極，即在地球表面上最北的點，也就是地球的自轉軸在北半球與地表相交會的點。北极点周围的地区称为北極地區，以北緯66°34′的北極圈為分界線。地理上的北極以下面的解釋為準：地球的自轉軸與地球表面的兩個交點之一，地理上的北極是緯度為北緯90°的點，在方向上是真北，在這一點所指向的任何方向都是南方。",
+    "title": "北极点"
+  },
   "zh.wikipedia.org/华盛顿哥伦比亚特区": {
     "description": "美利堅合眾國的首都",
     "extract": "华盛顿哥倫比亞特區，正式名称為哥伦比亚特區，簡稱華盛頓特區、華盛頓D.C.、華盛頓（Washington）或特區，中文又別稱華府，是美國的首都，為大多數美國聯邦政府機關、各國駐美使館及世界银行、國際貨幣基金、美洲国家组织等国际组织总部所在地，擁有為數眾多的博物館與文化史蹟。",
@@ -363,6 +383,11 @@
     "description": "國際組織",
     "extract": "英联邦 是一個由56个英語系的主权国家所组成的国际组织。",
     "title": "英联邦"
+  },
+  "zh.wikipedia.org/大西洋": {
+    "description": "地球上的海洋",
+    "extract": "大西洋，即亚特兰蒂斯洋，是世界第二大洋。原面積8221萬7千平方公里，在南冰洋確立後，面積調整為7676萬2千平方公里。平均深度3,646米，最深處波多黎各海沟深達8,605米。從赤道南北分為北大西洋和南大西洋。北面連接北冰洋，南面則以南緯60度與南冰洋接連。",
+    "title": "大西洋"
   },
   "zh.wikipedia.org/奥斯卡·王尔德": {
     "description": "愛爾蘭作家和詩人",
@@ -478,6 +503,11 @@
     "description": "美國政治家，1901年至1909年任美國總統",
     "extract": "小西奥多·罗斯福，荷兰裔美国人，美国政治人物，曾为第26任美國總統、美國陸軍退役上校，紐約市羅斯福家族出身。",
     "title": "西奥多·罗斯福"
+  },
+  "zh.wikipedia.org/西敏寺": {
+    "description": "英國倫敦的一座教堂",
+    "extract": "威斯敏斯特聖彼得協同教堂，通称威斯敏斯特修道院，是一座位于伦敦市中心西敏市的大型哥特式建筑风格的教堂，一直是英国君主（从英格兰、不列颠到英聯邦时期）安葬或加冕登基的地点。曾在1546–1556年短暂成为主教座堂，现为王家胜迹。1987年被列为世界文化遗产。",
+    "title": "西敏寺"
   },
   "zh.wikipedia.org/路易斯·蒙巴頓": {
     "description": "英国政治家和海军军官（1900-1979）",

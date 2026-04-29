@@ -118,6 +118,9 @@ EN_LINKS: list[tuple[str, str]] = [
     ("Washington, D.C.", "Washington,_D.C."),
     ("Queen Elizabeth", "Elizabeth_II"),
     ("New York", "New_York_City"),
+    ("Statue of Liberty", "Statue_of_Liberty"),
+    ("statue of freedom", "Statue_of_Freedom"),
+    ("fascism", "Fascism"),
 ]
 
 ZH_LINKS: list[tuple[str, str]] = [
@@ -142,7 +145,7 @@ ZH_LINKS: list[tuple[str, str]] = [
     ("約翰·甘迺迪", "约翰·肯尼迪"),
     ("蓋茲堡演說", "葛底斯堡演说"),
     ("白金漢宮", "白金汉宫"),
-    ("威斯敏斯特", "威斯敏斯特宫"),
+    ("西敏寺", "西敏寺"),
     ("英格蘭普通法", "普通法"),
     ("普通法", "普通法"),
     ("大憲章", "大憲章"),
@@ -159,6 +162,9 @@ ZH_LINKS: list[tuple[str, str]] = [
     ("阿巴拉契亞", "阿巴拉契亚山脉"),
     ("英聯邦", "大英国协"),
     ("九一一事件", "九一一袭击事件"),
+    ("九一一", "九一一袭击事件"),
+    ("大西洋", "大西洋"),
+    ("北極", "北极"),
     ("第五條", "北大西洋公约"),
     ("北約", "北大西洋公约组织"),
     ("AUKUS", "AUKUS"),
@@ -373,14 +379,28 @@ def linkify(
     """
     sorted_table = sorted(table, key=lambda kv: -len(kv[0]))
     out = text
-    matches: list[tuple[str, str, str]] = []  # (phrase, slug, url) per placeholder index
+    # EN catalog phrases use title case but the body sometimes lowercases them
+    # (e.g. "joint meeting of Congress" mid-sentence vs catalog "Joint Meeting
+    # of Congress"). Match case-insensitively for EN to keep footnote numbering
+    # aligned with the parallel ZH side; render the body's actual casing while
+    # the footnote head shows the catalog's canonical form. ZH has no case so
+    # the simpler path applies.
+    case_insensitive = lang == "en"
+    matches: list[tuple[str, str, str, str]] = []  # (actual_phrase, canonical_phrase, slug, url)
     for phrase, slug in sorted_table:
-        if phrase not in out:
+        # Treat U+00B7 (·) and U+30FB (・) as equivalent — Chinese
+        # transliteration sources mix them and they look identical in the
+        # serif fonts we use.
+        pattern_chars = ["[·・]" if c in "·・" else re.escape(c) for c in phrase]
+        pattern = re.compile("".join(pattern_chars), re.IGNORECASE if case_insensitive else 0)
+        mx = pattern.search(out)
+        if not mx:
             continue
+        actual_phrase = mx.group(0)
         url = f"https://{wiki_host}/wiki/{urllib.parse.quote(slug, safe='%#,_()')}"
         token = f"\x00LINK{len(matches)}\x00"
-        matches.append((phrase, slug, url))
-        out = out.replace(phrase, token, 1)
+        matches.append((actual_phrase, phrase, slug, url))
+        out = pattern.sub(token, out, count=1)
 
     # Walk placeholders in source order; assign footnote numbers.
     fn_for_match: dict[int, int | None] = {}
@@ -389,7 +409,7 @@ def linkify(
     placeholder_re = re.compile(r"\x00LINK(\d+)\x00")
     for m in placeholder_re.finditer(out):
         idx = int(m.group(1))
-        phrase, slug, url = matches[idx]
+        _, canonical_phrase, slug, url = matches[idx]
         art = article_slug(slug)
         if art in seen:
             fn_for_match[idx] = seen[art]
@@ -402,12 +422,15 @@ def linkify(
         n = len(footnotes) + 1
         seen[art] = n
         fn_for_match[idx] = n
+        # Footnote head uses the catalog's canonical phrase — what the reader
+        # saw in the body (case-normalised) — not the Wikipedia title, so the
+        # ¹ in the body and the entry head align by name, not by article slug.
         footnotes.append({
             "n": n,
-            "phrase": phrase,
+            "phrase": canonical_phrase,
             "slug": slug,
             "url": url,
-            "title": entry.get("title") or phrase,
+            "title": entry.get("title") or canonical_phrase,
             "extract": entry["extract"],
         })
 
@@ -422,8 +445,8 @@ def linkify(
         m = re.fullmatch(r"\x00LINK(\d+)\x00", part)
         if m:
             idx = int(m.group(1))
-            phrase, _, _ = matches[idx]
-            piece = html.escape(phrase)
+            actual_phrase, _, _, _ = matches[idx]
+            piece = html.escape(actual_phrase)
             n = fn_for_match[idx]
             if n is not None:
                 fid = f"p{section_id}-{lang}-{n}"
@@ -445,7 +468,7 @@ def render_notes(footnotes: list[dict], section_id: int, lang: str) -> str:
             trimmed = trimmed.rstrip() + "…"
         fid = f"p{section_id}-{lang}-{fn['n']}"
         items.append(
-            f'            <li id="{fid}"><strong>{html.escape(fn["title"])}</strong> — '
+            f'            <li id="{fid}"><strong>{html.escape(fn["phrase"])}</strong> — '
             f"{html.escape(trimmed)} "
             f'<a href="{html.escape(fn["url"], quote=True)}" target="_blank" '
             f'rel="noopener noreferrer" aria-label="Wikipedia article">'
