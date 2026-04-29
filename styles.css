@@ -298,6 +298,13 @@ body {
   color: var(--muted-2);
   margin-inline-start: 0.15em;
 }
+/* The ↗ U+2197 carries an emoji presentation by default on macOS / iOS.
+   The U+FE0E variation selector in the markup forces text presentation;
+   font-variant-emoji repeats the request for engines that honour it. */
+.notes .ext-mark {
+  font-variant-emoji: text;
+  font-family: var(--serif-en);
+}
 .notes li a[aria-label="Wikipedia article"]:hover,
 .notes li a[aria-label="Wikipedia article"]:focus-visible {
   color: var(--cinnabar);

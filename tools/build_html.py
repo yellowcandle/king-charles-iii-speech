@@ -448,7 +448,8 @@ def render_notes(footnotes: list[dict], section_id: int, lang: str) -> str:
             f'            <li id="{fid}"><strong>{html.escape(fn["title"])}</strong> — '
             f"{html.escape(trimmed)} "
             f'<a href="{html.escape(fn["url"], quote=True)}" target="_blank" '
-            f'rel="noopener noreferrer" aria-label="Wikipedia article">↗</a></li>'
+            f'rel="noopener noreferrer" aria-label="Wikipedia article">'
+            f'<span class="ext-mark">↗︎</span></a></li>'
         )
     items_html = "\n".join(items)
     return (
