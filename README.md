@@ -8,7 +8,9 @@ imperial-edict) rendering written in the voice of an ancient Chinese sovereign
 
 Linked entities — persons, events, documents, places — open the matching
 Wikipedia article: **English column → en.wikipedia.org**, **文言 column →
-zh.wikipedia.org**.
+zh.wikipedia.org**. Each linked phrase carries a superscript marker; expanding
+the per-section `notes ▸` drawer reveals a short Wikipedia gloss for every
+entity in that paragraph.
 
 ## Sources
 
@@ -25,7 +27,8 @@ zh.wikipedia.org**.
 ├── CharlesIII-speech.txt # source of truth for the parallel text
 ├── webui.pen             # Pencil design source (regal, parchment-paper direction)
 ├── tools/
-│   └── build_html.py     # one-shot generator that turns the .txt + entity catalog into index.html
+│   ├── build_html.py     # one-shot generator that turns the .txt + entity catalog into index.html
+│   └── wiki_cache.json   # cached Wikipedia summaries — committed for reproducible offline rebuilds
 └── README.md
 ```
 
@@ -58,7 +61,37 @@ python3 tools/build_html.py
 
 The generator parses the `**Original** > … **文言詔體譯** > …` blocks, applies
 the curated phrase-to-Wikipedia-slug catalog (longest match first, once per
-paragraph), and writes the full HTML.
+paragraph), fills the per-section footnote drawers from `tools/wiki_cache.json`,
+and writes the full HTML.
+
+### Footnote glosses & the Wikipedia cache
+
+`tools/wiki_cache.json` holds a short Wikipedia summary for every curated slug,
+keyed by `"{host}/{article-slug}"`. It's committed to the repo so subsequent
+builds run offline and produce byte-identical output.
+
+- **First build (or after `rm tools/wiki_cache.json`)** fetches every entry
+  from the matching `en.wikipedia.org` / `zh.wikipedia.org` host. Requires
+  network. Roughly 100 entries, ~30 s.
+- **Subsequent builds** use only the cache — no network calls.
+- **A specific entry's gloss is wrong or unhelpful?** Edit its `extract` (and
+  optionally `title`, `description`) in `tools/wiki_cache.json` and add
+  `"_manual": true` to the entry. The build skips re-fetching `_manual` entries
+  even after `rm`-and-rebuild won't reach them. Example:
+
+  ```json
+  "zh.wikipedia.org/英联邦": {
+    "title": "英聯邦",
+    "extract": "由前英帝國諸國組成之國際組織……",
+    "description": "英语国家国际组织",
+    "_manual": true
+  }
+  ```
+
+- **Refresh the whole cache**: `rm tools/wiki_cache.json && python3 tools/build_html.py`.
+  All non-`_manual` entries re-fetch from current Wikipedia.
+- **Strict mode**: `python3 tools/build_html.py --strict` exits non-zero if
+  any entry fails to fetch — useful in CI.
 
 ## Verifying Wikipedia links
 

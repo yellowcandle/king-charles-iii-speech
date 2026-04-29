@@ -11,6 +11,7 @@
   --cinnabar-2:   #a82626;
 
   --serif-en: "EB Garamond", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --serif-display: "Cormorant Garamond", "EB Garamond", Georgia, "Times New Roman", serif;
   --serif-zh: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "PMingLiU", "Songti SC", serif;
 
   --maxw: 1200px;
@@ -70,12 +71,21 @@ body {
 
 .title {
   margin: 0 0 0.5rem;
-  font-family: var(--serif-en);
+  font-family: var(--serif-display);
   font-weight: 600;
-  font-size: clamp(2rem, 1.4rem + 3vw, 3.25rem);
-  line-height: 1.12;
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.4rem);
+  line-height: 1.05;
   letter-spacing: -0.005em;
   color: var(--ink);
+}
+.title .zh {
+  display: block;
+  font-family: var(--serif-zh);
+  font-weight: 600;
+  font-size: 0.86em;
+  line-height: 1.18;
+  margin-block-start: 0.35rem;
+  letter-spacing: 0;
 }
 
 .subtitle {
@@ -216,6 +226,106 @@ body {
   outline-offset: 2px;
   border-radius: 1px;
 }
+
+/* ---------- Footnote drawer + superscript markers ---------- */
+.fn-ref {
+  font-size: 0.65em;
+  line-height: 0;
+  position: relative;
+  top: -0.4em;
+  margin-inline-start: 0.05em;
+  color: var(--muted-2);
+}
+.fn-ref a {
+  color: inherit;
+  text-decoration: none;
+  padding: 0 0.1em;
+  border-radius: 2px;
+}
+.fn-ref a:hover,
+.fn-ref a:focus-visible {
+  color: var(--cinnabar);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+.fn-ref a:focus-visible {
+  outline: 2px solid var(--cinnabar);
+  outline-offset: 1px;
+}
+
+.notes {
+  margin-block-start: 1rem;
+  padding-block-start: 0.6rem;
+  border-block-start: 1px dashed var(--rule);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.notes > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  user-select: none;
+  padding-block: 0.1rem;
+  transition: color 120ms ease;
+}
+.notes > summary::-webkit-details-marker { display: none; }
+.notes > summary:hover,
+.notes > summary:focus-visible { color: var(--cinnabar); }
+.notes[open] > summary { color: var(--ink-soft); }
+
+.notes ol {
+  list-style: decimal;
+  margin: 0.6rem 0 0;
+  padding-inline-start: 1.6rem;
+}
+.notes li {
+  margin-block: 0.35rem;
+  padding-inline-start: 0.15rem;
+  scroll-margin-block-start: 5rem;
+}
+.notes li::marker {
+  color: var(--cinnabar);
+  font-variant-numeric: lining-nums;
+}
+.notes li strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.notes li a[aria-label="Wikipedia article"] {
+  text-decoration: none;
+  color: var(--muted-2);
+  margin-inline-start: 0.15em;
+}
+.notes li a[aria-label="Wikipedia article"]:hover,
+.notes li a[aria-label="Wikipedia article"]:focus-visible {
+  color: var(--cinnabar);
+}
+.notes li:target {
+  background: rgba(139, 26, 26, 0.06);
+  border-radius: 2px;
+}
+[data-theme="dark"] .notes li:target {
+  background: rgba(217, 102, 102, 0.12);
+}
+
+/* 文言 column: a quieter register, modest font, muted tone — `白話注` (vernacular note)
+   visually marks the modern-Mandarin gloss against the Classical body. */
+.col-zh .notes {
+  font-family: var(--serif-zh);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.col-zh .notes > summary {
+  font-family: var(--serif-zh);
+  letter-spacing: 0.14em;
+}
+.col-zh .notes li strong { color: var(--ink-soft); }
 
 /* ---------- View-mode visibility ---------- */
 [data-view="english"] .col-zh,

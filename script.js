@@ -59,4 +59,17 @@
       syncButtons();
     });
   });
+
+  // ---- footnote drawer: open the parent <details> when a fn-li becomes the URL target ----
+  // The drawer toggles natively without JS; this only enhances "click superscript → drawer opens".
+  const openTargetDrawer = () => {
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el || !el.matches("li[id^='p']")) return;
+    const drawer = el.closest("details.notes");
+    if (drawer && !drawer.open) drawer.open = true;
+  };
+  window.addEventListener("hashchange", openTargetDrawer);
+  openTargetDrawer();
 })();

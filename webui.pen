@@ -44,17 +44,41 @@
               "letterSpacing": 2.6
             },
             {
-              "type": "text",
+              "type": "frame",
               "id": "BH2lV",
               "name": "title",
-              "fill": "#1f1a14",
-              "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "King Charles III at the Joint Session of Congress",
-              "lineHeight": 1.15,
-              "fontFamily": "EB Garamond",
-              "fontSize": 48,
-              "fontWeight": "600"
+              "fill": "#00000000",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "BH2lV_en",
+                  "name": "titleEn",
+                  "fill": "#1f1a14",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "King Charles III at the Joint Session of Congress",
+                  "lineHeight": 1.05,
+                  "fontFamily": "Cormorant Garamond",
+                  "fontSize": 48,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "BH2lV_zh",
+                  "name": "titleZh",
+                  "fill": "#1f1a14",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "英皇查理斯三世於美國參眾兩院聯席會議致辭",
+                  "lineHeight": 1.18,
+                  "fontFamily": "Noto Serif TC",
+                  "fontSize": 41,
+                  "fontWeight": "600"
+                }
+              ]
             },
             {
               "type": "text",

@@ -4,19 +4,36 @@
 Run once after editing the source text or the entity catalog. The generated
 index.html is the deployable artifact; the build script stays in `tools/` for
 transparent regeneration.
+
+On first run (or after `rm tools/wiki_cache.json`), this fetches a short
+summary for every curated Wikipedia slug from the matching language host and
+caches it to `tools/wiki_cache.json`. Subsequent runs are offline. Cache
+entries marked `"_manual": true` are never overwritten — hand-edit them when
+the auto-fetched gloss misfires.
 """
 
 from __future__ import annotations
 
+import argparse
 import html
+import json
 import re
 import sys
+import time
+import urllib.error
 import urllib.parse
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "CharlesIII-speech.txt"
 OUTPUT = ROOT / "index.html"
+CACHE_PATH = ROOT / "tools" / "wiki_cache.json"
+
+USER_AGENT = (
+    "king-charles-iii-bilingual-reader/1.0 "
+    "(https://github.com/yellowcandle/king-charles-iii-speech)"
+)
 
 ROMAN = [
     "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
@@ -45,7 +62,8 @@ def cn_num(n: int) -> str:
 # Phrases are matched as exact substrings (case-sensitive, with word-boundary nuance
 # encoded in each phrase). Longest phrases are applied first to avoid being shadowed
 # by shorter ones. Each entry: (phrase, wiki-slug). The wiki-slug is *not* URL-encoded
-# in the table — we encode at emit time.
+# in the table — we encode at emit time. Slugs may carry a `#section` fragment for the
+# inline link; the cache is keyed by the article-only slug.
 
 EN_LINKS: list[tuple[str, str]] = [
     ("incident not far from this great building", "January_6_United_States_Capitol_attack"),
@@ -104,10 +122,10 @@ EN_LINKS: list[tuple[str, str]] = [
 
 ZH_LINKS: list[tuple[str, str]] = [
     ("近於此巍巍殿宇之旁，甫有變故", "2021年美国国会大厦袭击事件"),
-    ("愛丁堡公爵菲臘親王", "菲利普親王"),
+    ("愛丁堡公爵菲臘親王", "菲臘親王"),
     ("伊利沙伯王太后", "伊麗莎白·鮑斯-萊昂"),
     ("美國最高法院歷史學會", "美国最高法院"),
-    ("一六八九年《權利法案》", "1689年权利法令"),
+    ("一六八九年《權利法案》", "1689年權利法令"),
     ("美利堅《權利法案》", "美国权利法案"),
     ("生命、自由、追求幸福", "生命权、自由权和追求幸福的权利"),
     ("「無代表，毋納稅」", "無代表，不納稅"),
@@ -160,41 +178,288 @@ ZH_LINKS: list[tuple[str, str]] = [
 ]
 
 
-def linkify(text: str, table: list[tuple[str, str]], wiki_host: str) -> str:
-    """Replace each phrase in `table` with an <a> tag. Longest phrases first.
+# ---- cache ----
 
-    Uses placeholder tokens during pass 1 to prevent re-replacement of already-linked
-    text on subsequent passes. Pass 2 swaps placeholders for the actual <a> tag.
+def article_slug(slug: str) -> str:
+    return slug.split("#", 1)[0]
+
+
+def cache_key(host: str, slug: str) -> str:
+    return f"{host}/{article_slug(slug)}"
+
+
+def load_cache(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def save_cache(path: Path, data: dict) -> None:
+    path.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+# ---- Wikipedia fetch ----
+
+def _http_json(url: str, host: str) -> dict | None:
+    """GET a URL and decode JSON. Returns None and warns on any failure."""
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Accept-Language": "en" if host.startswith("en") else "zh",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status != 200:
+                return None
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError:
+        return None
+    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError):
+        return None
+
+
+def _fetch_via_rest(host: str, slug: str) -> dict | None:
+    quoted = urllib.parse.quote(slug, safe="%_,()")
+    url = f"https://{host}/api/rest_v1/page/summary/{quoted}"
+    data = _http_json(url, host)
+    if not data:
+        return None
+    if data.get("type") == "disambiguation":
+        return {"_disambiguation": True}
+    extract = (data.get("extract") or "").strip()
+    if not extract:
+        return None
+    titles = data.get("titles") or {}
+    return {
+        "title": titles.get("normalized") or data.get("title") or slug.replace("_", " "),
+        "extract": extract,
+        "description": (data.get("description") or "").strip(),
+    }
+
+
+def _fetch_via_action(host: str, slug: str) -> dict | None:
+    """Action API fallback. Follows soft redirects (`&redirects=1`)."""
+    params = {
+        "action": "query",
+        "format": "json",
+        "formatversion": "2",
+        "prop": "extracts|description",
+        "exintro": "1",
+        "explaintext": "1",
+        "redirects": "1",
+        "titles": slug.replace("_", " "),
+    }
+    url = f"https://{host}/w/api.php?" + urllib.parse.urlencode(params)
+    data = _http_json(url, host)
+    if not data:
+        return None
+    pages = (data.get("query") or {}).get("pages") or []
+    if not pages:
+        return None
+    page = pages[0]
+    if page.get("missing"):
+        return None
+    extract = (page.get("extract") or "").strip()
+    if not extract:
+        return None
+    return {
+        "title": page.get("title") or slug.replace("_", " "),
+        "extract": extract,
+        "description": (page.get("description") or "").strip(),
+    }
+
+
+def fetch_summary(host: str, slug: str) -> dict | None:
+    """REST `page/summary` with Action API fallback (handles redirects)."""
+    rest = _fetch_via_rest(host, slug)
+    if rest and not rest.get("_disambiguation"):
+        return rest
+    if rest and rest.get("_disambiguation"):
+        print(f"warn: {host}/{slug} resolved to disambiguation page", file=sys.stderr)
+        return None
+    action = _fetch_via_action(host, slug)
+    if action:
+        return action
+    print(f"warn: {host}/{slug} no summary available (REST + Action both failed)", file=sys.stderr)
+    return None
+
+
+def populate_cache(cache: dict) -> tuple[int, int, int]:
+    """Ensure every catalog (host, article_slug) has a cache entry. Mutates `cache`.
+
+    Returns (cached_hits, fetched_now, failed).
     """
-    # Sort by length descending so "King George the Third" wins before "George".
-    sorted_table = sorted(table, key=lambda kv: -len(kv[0]))
-    replacements: list[tuple[str, str]] = []  # (placeholder, anchor_html)
+    needed: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for _, slug in EN_LINKS:
+        key = cache_key("en.wikipedia.org", slug)
+        if key in seen:
+            continue
+        seen.add(key)
+        needed.append(("en.wikipedia.org", article_slug(slug)))
+    for _, slug in ZH_LINKS:
+        key = cache_key("zh.wikipedia.org", slug)
+        if key in seen:
+            continue
+        seen.add(key)
+        needed.append(("zh.wikipedia.org", article_slug(slug)))
 
+    cached = fetched = failed = 0
+    for host, slug in needed:
+        key = f"{host}/{slug}"
+        existing = cache.get(key)
+        if existing and (existing.get("_manual") or existing.get("extract")):
+            cached += 1
+            continue
+        result = fetch_summary(host, slug)
+        if result is None:
+            failed += 1
+            continue
+        cache[key] = result
+        fetched += 1
+        time.sleep(0.1)
+    return cached, fetched, failed
+
+
+# ---- text helpers ----
+
+_SENTENCE_END = re.compile(r"[。！？]|[.!?](?=\s|$)")
+
+
+def trim_extract(text: str, max_chars: int = 250) -> tuple[str, bool]:
+    """Trim to first sentence boundary, else word-boundary near max_chars.
+
+    Returns (trimmed, was_truncated). Caller appends an ellipsis if truncated.
+    """
+    text = text.strip()
+    if len(text) <= max_chars:
+        m = _SENTENCE_END.search(text)
+        if m and m.end() < len(text):
+            return text[: m.end()].rstrip(), True
+        return text, False
+    # Hard cap exceeded — try sentence boundary inside the cap first.
+    capped = text[: max_chars + 1]
+    m = _SENTENCE_END.search(capped)
+    if m and m.end() <= max_chars:
+        return text[: m.end()].rstrip(), True
+    # Word-boundary fallback. CJK has no spaces, so just hard-cut for those.
+    snippet = text[:max_chars]
+    if " " in snippet:
+        snippet = snippet.rsplit(" ", 1)[0]
+    return snippet.rstrip(), True
+
+
+# ---- linking + footnote collection ----
+
+def linkify(
+    text: str,
+    table: list[tuple[str, str]],
+    wiki_host: str,
+    cache: dict,
+    section_id: int,
+    lang: str,
+) -> tuple[str, list[dict]]:
+    """Replace each phrase with `<a>…</a><sup>n</sup>` and return matching footnote data.
+
+    Numbering is assigned in source order, deduped by article slug, and only includes
+    entities whose summaries are present in `cache`. Phrases without a cache entry still
+    get an inline `<a>` (no `<sup>`).
+    """
+    sorted_table = sorted(table, key=lambda kv: -len(kv[0]))
     out = text
+    matches: list[tuple[str, str, str]] = []  # (phrase, slug, url) per placeholder index
     for phrase, slug in sorted_table:
         if phrase not in out:
             continue
         url = f"https://{wiki_host}/wiki/{urllib.parse.quote(slug, safe='%#,_()')}"
-        token = f"\x00LINK{len(replacements)}\x00"
-        anchor = (
-            f'<a href="{html.escape(url, quote=True)}" '
-            f'target="_blank" rel="noopener noreferrer">'
-            f"{html.escape(phrase)}</a>"
-        )
-        replacements.append((token, anchor))
-        out = out.replace(phrase, token, 1)  # only the first occurrence per paragraph
+        token = f"\x00LINK{len(matches)}\x00"
+        matches.append((phrase, slug, url))
+        out = out.replace(phrase, token, 1)
 
-    # Now HTML-escape the surrounding plain text without touching placeholders.
+    # Walk placeholders in source order; assign footnote numbers.
+    fn_for_match: dict[int, int | None] = {}
+    seen: dict[str, int | None] = {}  # article_slug -> assigned n (None if cache miss)
+    footnotes: list[dict] = []
+    placeholder_re = re.compile(r"\x00LINK(\d+)\x00")
+    for m in placeholder_re.finditer(out):
+        idx = int(m.group(1))
+        phrase, slug, url = matches[idx]
+        art = article_slug(slug)
+        if art in seen:
+            fn_for_match[idx] = seen[art]
+            continue
+        entry = cache.get(f"{wiki_host}/{art}")
+        if not entry or not entry.get("extract"):
+            seen[art] = None
+            fn_for_match[idx] = None
+            continue
+        n = len(footnotes) + 1
+        seen[art] = n
+        fn_for_match[idx] = n
+        footnotes.append({
+            "n": n,
+            "phrase": phrase,
+            "slug": slug,
+            "url": url,
+            "title": entry.get("title") or phrase,
+            "extract": entry["extract"],
+        })
+
+    # Render: substitute placeholders, escape surrounding plaintext.
     parts = re.split(r"(\x00LINK\d+\x00)", out)
-    encoded = []
+    rendered: list[str] = []
     for part in parts:
-        if part.startswith("\x00LINK") and part.endswith("\x00"):
-            idx = int(part[len("\x00LINK") : -1])
-            encoded.append(replacements[idx][1])
+        m = re.fullmatch(r"\x00LINK(\d+)\x00", part)
+        if m:
+            idx = int(m.group(1))
+            phrase, slug, url = matches[idx]
+            anchor = (
+                f'<a href="{html.escape(url, quote=True)}" '
+                f'target="_blank" rel="noopener noreferrer">'
+                f"{html.escape(phrase)}</a>"
+            )
+            n = fn_for_match[idx]
+            if n is not None:
+                fid = f"p{section_id}-{lang}-{n}"
+                anchor += f'<sup class="fn-ref"><a href="#{fid}">{n}</a></sup>'
+            rendered.append(anchor)
         else:
-            encoded.append(html.escape(part))
-    return "".join(encoded)
+            rendered.append(html.escape(part))
+    return "".join(rendered), footnotes
 
+
+def render_notes(footnotes: list[dict], section_id: int, lang: str) -> str:
+    if not footnotes:
+        return ""
+    summary = "notes ▸" if lang == "en" else "白話注 ▸"
+    items: list[str] = []
+    for fn in footnotes:
+        trimmed, truncated = trim_extract(fn["extract"])
+        if truncated:
+            trimmed = trimmed.rstrip() + "…"
+        fid = f"p{section_id}-{lang}-{fn['n']}"
+        items.append(
+            f'            <li id="{fid}"><strong>{html.escape(fn["title"])}</strong> — '
+            f"{html.escape(trimmed)} "
+            f'<a href="{html.escape(fn["url"], quote=True)}" target="_blank" '
+            f'rel="noopener noreferrer" aria-label="Wikipedia article">↗</a></li>'
+        )
+    items_html = "\n".join(items)
+    return (
+        f'        <details class="notes notes-{lang}">\n'
+        f"          <summary>{summary}</summary>\n"
+        f"          <ol>\n{items_html}\n          </ol>\n"
+        f"        </details>\n"
+    )
+
+
+# ---- text parsing ----
 
 def parse_pairs(src: str) -> list[tuple[str, str]]:
     chunks = [c.strip() for c in src.split("\n---\n") if c.strip()]
@@ -206,34 +471,33 @@ def parse_pairs(src: str) -> list[tuple[str, str]]:
             re.DOTALL,
         )
         if not m:
-            # Skip front matter / preamble blocks
             continue
         en = m.group(1).strip()
         zh = m.group(2).strip()
-        # Collapse runaway whitespace inside the quoted block
         en = re.sub(r"\s+", " ", en)
         zh = re.sub(r"\s+", " ", zh)
-        # Strip surrounding straight or curly quotes that wrap the whole quote
         en = re.sub(r'^["“”“”]+', "", en)
         en = re.sub(r'["“”“”]+$', "", en)
         pairs.append((en, zh))
     return pairs
 
 
-def render(pairs: list[tuple[str, str]]) -> str:
+def render(pairs: list[tuple[str, str]], cache: dict) -> str:
     sections: list[str] = []
     for i, (en, zh) in enumerate(pairs, start=1):
-        en_html = linkify(en, EN_LINKS, "en.wikipedia.org")
-        zh_html = linkify(zh, ZH_LINKS, "zh.wikipedia.org")
+        en_html, en_notes = linkify(en, EN_LINKS, "en.wikipedia.org", cache, i, "en")
+        zh_html, zh_notes = linkify(zh, ZH_LINKS, "zh.wikipedia.org", cache, i, "zh")
         sections.append(
             f'    <section class="pair" id="p{i}" aria-label="Paragraph {i}">\n'
             f'      <div class="col col-en" lang="en">\n'
             f'        <p class="col-label"><a href="#p{i}" aria-label="Paragraph {i} permalink">§ <span class="num">{ROMAN[i]}</span></a> · English</p>\n'
             f"        <p>{en_html}</p>\n"
+            f"{render_notes(en_notes, i, 'en')}"
             f"      </div>\n"
             f'      <div class="col col-zh" lang="zh-Hant-classical">\n'
             f'        <p class="col-label"><span class="num">第{cn_num(i)}節</span> · 文言</p>\n'
             f"        <p>{zh_html}</p>\n"
+            f"{render_notes(zh_notes, i, 'zh')}"
             f"      </div>\n"
             f"    </section>\n"
         )
@@ -250,13 +514,13 @@ def render(pairs: list[tuple[str, str]]) -> str:
     <meta property="og:description" content="A bilingual reader: the original English alongside a 文言詔體 Classical Chinese rendering." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="page">
     <header>
       <p class="eyebrow">Address to the 119th Congress  ·  April 2026</p>
-      <h1 class="title">King Charles III at the Joint Session of Congress</h1>
+      <h1 class="title">King Charles III at the Joint Session of Congress<span class="zh" lang="zh-Hant">英皇查理斯三世於美國參眾兩院聯席會議致辭</span></h1>
       <p class="subtitle">Original English  ·  <span class="zh">文言詔體</span> — A Bilingual Reader</p>
 
       <div class="toolbar" role="toolbar" aria-label="Display options">
@@ -283,7 +547,7 @@ def render(pairs: list[tuple[str, str]]) -> str:
     <footer class="footer">
       <div>
         <div>English original · <a href="https://www.ctvnews.ca/canada/royal-family/article/full-speech-king-charles-addresses-us-congress-highlights-uk-us-bond/" target="_blank" rel="noopener noreferrer">CTV News full transcript</a> · local copy <a href="CharlesIII-speech.txt">CharlesIII-speech.txt</a></div>
-        <div class="attr">文言詔體 translation drafted with ChatGPT, reviewed by author. Wikipedia anchors curated by hand.</div>
+        <div class="attr">文言詔體 translation drafted with ChatGPT, reviewed by author. Wikipedia anchors curated by hand. Footnote glosses sourced from Wikipedia summaries at build time.</div>
       </div>
       <div class="sig">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4l3 14h14l3-14-5 5-5-7-5 7-5-5z"/><path d="M5 18h14"/></svg>
@@ -298,6 +562,14 @@ def render(pairs: list[tuple[str, str]]) -> str:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero if any Wikipedia fetch fails.",
+    )
+    args = parser.parse_args()
+
     if not SOURCE.exists():
         print(f"Source not found: {SOURCE}", file=sys.stderr)
         return 1
@@ -305,8 +577,21 @@ def main() -> int:
     if not pairs:
         print("No paragraph pairs parsed.", file=sys.stderr)
         return 1
-    OUTPUT.write_text(render(pairs), encoding="utf-8")
+
+    cache = load_cache(CACHE_PATH)
+    cached, fetched, failed = populate_cache(cache)
+    save_cache(CACHE_PATH, cache)
+    print(
+        f"wiki: {cached} cached, {fetched} fetched, {failed} failed",
+        file=sys.stderr,
+    )
+
+    OUTPUT.write_text(render(pairs, cache), encoding="utf-8")
     print(f"Wrote {OUTPUT} with {len(pairs)} paragraph pairs.")
+
+    if args.strict and failed:
+        print(f"--strict: {failed} fetch failure(s); exiting non-zero.", file=sys.stderr)
+        return 2
     return 0
 
 
