@@ -412,23 +412,23 @@ def linkify(
         })
 
     # Render: substitute placeholders, escape surrounding plaintext.
+    # Wikipedia links live in the footnote drawer, not inline. Body keeps the
+    # phrase as plain text and emits a numbered superscript that jumps to the
+    # matching footnote. Phrases whose summary couldn't be cached become plain
+    # text with no marker.
     parts = re.split(r"(\x00LINK\d+\x00)", out)
     rendered: list[str] = []
     for part in parts:
         m = re.fullmatch(r"\x00LINK(\d+)\x00", part)
         if m:
             idx = int(m.group(1))
-            phrase, slug, url = matches[idx]
-            anchor = (
-                f'<a href="{html.escape(url, quote=True)}" '
-                f'target="_blank" rel="noopener noreferrer">'
-                f"{html.escape(phrase)}</a>"
-            )
+            phrase, _, _ = matches[idx]
+            piece = html.escape(phrase)
             n = fn_for_match[idx]
             if n is not None:
                 fid = f"p{section_id}-{lang}-{n}"
-                anchor += f'<sup class="fn-ref"><a href="#{fid}">{n}</a></sup>'
-            rendered.append(anchor)
+                piece += f'<sup class="fn-ref"><a href="#{fid}">{n}</a></sup>'
+            rendered.append(piece)
         else:
             rendered.append(html.escape(part))
     return "".join(rendered), footnotes

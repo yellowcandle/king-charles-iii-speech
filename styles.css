@@ -207,20 +207,16 @@ body {
   text-justify: inter-character;
 }
 
-/* Wikipedia link styling — underline + cinnabar on hover */
+/* Body anchors are now only the section permalink and the footnote-jump
+   superscripts — Wikipedia links moved into the footnote drawer.
+   Keep affordances quiet inline; loud on hover/focus for accessibility. */
 .pair a {
   color: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--muted-2);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-  transition: color 120ms ease, text-decoration-color 120ms ease;
+  text-decoration: none;
+  transition: color 120ms ease;
 }
 .pair a:hover,
-.pair a:focus-visible {
-  color: var(--cinnabar);
-  text-decoration-color: var(--cinnabar);
-}
+.pair a:focus-visible { color: var(--cinnabar); }
 .pair a:focus-visible {
   outline: 2px solid var(--cinnabar);
   outline-offset: 2px;
@@ -229,12 +225,13 @@ body {
 
 /* ---------- Footnote drawer + superscript markers ---------- */
 .fn-ref {
-  font-size: 0.65em;
+  font-size: 0.68em;
   line-height: 0;
   position: relative;
   top: -0.4em;
-  margin-inline-start: 0.05em;
-  color: var(--muted-2);
+  margin-inline-start: 0.08em;
+  color: var(--cinnabar);
+  font-variant-numeric: lining-nums;
 }
 .fn-ref a {
   color: inherit;
